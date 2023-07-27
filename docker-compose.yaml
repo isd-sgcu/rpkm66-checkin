@@ -1,0 +1,25 @@
+version: "3.9"
+
+services:
+  local-db:
+    image: postgres:15.3-alpine
+    container_name: rnkm-local-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: rnkm-db
+    volumes:
+      - ./volumes/postgres:/var/lib/postgresql
+    ports:
+      - "5432:5432"
+
+  local-cache:
+    image: bitnami/redis:6.2.6
+    container_name: rnkm-cache
+    restart: unless-stopped
+    environment:
+      REDIS_HOST: localhost
+      ALLOW_EMPTY_PASSWORD: "yes"
+    ports:
+      - "6379:6379"

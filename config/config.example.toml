@@ -1,0 +1,16 @@
+[database]
+host = "localhost"
+port = 5432
+name = "rnkm-db"
+username = "root"
+password = "root"
+
+[redis]
+host = ""
+port = 6379
+password = ""
+dbnum = 0
+
+[app]
+port = 3000
+debug = true
