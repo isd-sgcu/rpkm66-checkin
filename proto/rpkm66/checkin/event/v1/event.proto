@@ -18,7 +18,7 @@ message UserEvent {
 
 service EventService {
   rpc GetAllEvents(GetAllEventsRequest) returns (GetAllEventsResponse) {}
-  rpc GetEventById(GetEventByEventIdRequest) returns (GetEventByEventIdResponse) {} 
+  rpc GetEventByEventId(GetEventByEventIdRequest) returns (GetEventByEventIdResponse) {} 
   rpc GetEventsByUserId(GetEventsByUserIdRequest) returns (GetEventsByUserIdResponse) {}
   rpc GetEventsByNamespaceId(GetEventsByNamespaceIdRequest) returns (GetEventsByNamespaceIdResponse) {}
 }
