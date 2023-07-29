@@ -5,16 +5,16 @@ import (
 	"gorm.io/gorm"
 )
 
-type repositoryImpl struct {
+type NamespaceRepository struct {
 	db *gorm.DB
 }
 
-func NewRepository(db *gorm.DB) *repositoryImpl {
-	return &repositoryImpl{
+func NewRepository(db *gorm.DB) *NamespaceRepository {
+	return &NamespaceRepository{
 		db,
 	}
 }
 
-func (r *repositoryImpl) GetAllNamespace(result *[]*namespace_ent.Namespace) error {
+func (r *NamespaceRepository) GetAllNamespace(result *[]*namespace_ent.Namespace) error {
 	return r.db.Model(&namespace_ent.Namespace{}).Find(result).Error
 }
