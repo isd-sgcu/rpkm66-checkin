@@ -30,7 +30,7 @@ func (s *serviceImpl) GetAllNamespaces(ctx context.Context, request *v1.GetAllNa
 		return nil, err
 	}
 
-	arr := make([]*v1.Namespace, len(namespaces))
+	arr := make([]*v1.Namespace, 0)
 	for _, namespace := range namespaces {
 		arr = append(arr, namespace.ToProto())
 	}
