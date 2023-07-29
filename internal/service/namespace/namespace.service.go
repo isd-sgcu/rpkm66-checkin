@@ -8,8 +8,6 @@ import (
 	"github.com/isd-sgcu/rpkm66-checkin/pkg/repository/namespace"
 )
 
-var _ v1.NamespaceServiceServer = &serviceImpl{}
-
 type serviceImpl struct {
 	v1.UnimplementedNamespaceServiceServer
 	repo namespace.Repository
@@ -30,9 +28,9 @@ func (s *serviceImpl) GetAllNamespaces(ctx context.Context, request *v1.GetAllNa
 		return nil, err
 	}
 
-	arr := make([]*v1.Namespace, 0)
-	for _, namespace := range namespaces {
-		arr = append(arr, namespace.ToProto())
+	arr := make([]*v1.Namespace, len(namespaces))
+	for i, namespace := range namespaces {
+		arr[i] = namespace.ToProto()
 	}
 
 	response := &v1.GetAllNamespacesResponse{
