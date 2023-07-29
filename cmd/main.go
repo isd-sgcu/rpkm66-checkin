@@ -12,9 +12,12 @@ import (
 
 	"github.com/isd-sgcu/rpkm66-checkin/cfgldr"
 	"github.com/isd-sgcu/rpkm66-checkin/database"
-	v1 "github.com/isd-sgcu/rpkm66-checkin/internal/proto/rpkm66/checkin/namespace/v1"
+	event_v1 "github.com/isd-sgcu/rpkm66-checkin/internal/proto/rpkm66/checkin/event/v1"
+	namespace_v1 "github.com/isd-sgcu/rpkm66-checkin/internal/proto/rpkm66/checkin/namespace/v1"
+	event_repo "github.com/isd-sgcu/rpkm66-checkin/pkg/repository/event"
 	namespace_repo "github.com/isd-sgcu/rpkm66-checkin/pkg/repository/namespace"
-	namespace_svc "github.com/isd-sgcu/rpkm66-checkin/pkg/service/namespace"
+	event_service "github.com/isd-sgcu/rpkm66-checkin/pkg/service/event"
+	namespace_service "github.com/isd-sgcu/rpkm66-checkin/pkg/service/namespace"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
@@ -112,14 +115,19 @@ func main() {
 	}
 
 	namespaceRepo := namespace_repo.NewRepository(db)
-	namespaceSvc := namespace_svc.NewService(namespaceRepo)
+	namespaceService := namespace_service.NewService(namespaceRepo)
+
+	eventRepo := event_repo.NewRepository(db)
+	eventService := event_service.NewService(eventRepo)
 
 	grpcServer := grpc.NewServer()
 
 	// cacheRepo := cache.NewRepository(cacheDB)
 
 	grpc_health_v1.RegisterHealthServer(grpcServer, health.NewServer())
-	v1.RegisterNamespaceServiceServer(grpcServer, namespaceSvc)
+
+	namespace_v1.RegisterNamespaceServiceServer(grpcServer, namespaceService)
+	event_v1.RegisterEventServiceServer(grpcServer, eventService)
 
 	reflection.Register(grpcServer)
 	go func() {
