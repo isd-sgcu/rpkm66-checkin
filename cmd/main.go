@@ -89,7 +89,7 @@ func main() {
 	if err != nil {
 		log.Fatal().
 			Err(err).
-			Str("service", "backend").
+			Str("service", "checkin").
 			Msg("Failed to start service")
 	}
 
@@ -97,7 +97,7 @@ func main() {
 	if err != nil {
 		log.Fatal().
 			Err(err).
-			Str("service", "backend").
+			Str("service", "checkin").
 			Msg("Failed to start service")
 	}
 
@@ -105,7 +105,7 @@ func main() {
 	if err != nil {
 		log.Fatal().
 			Err(err).
-			Str("service", "backend").
+			Str("service", "checkin").
 			Msg("Failed to start service")
 	}
 
@@ -129,13 +129,13 @@ func main() {
 	reflection.Register(grpcServer)
 	go func() {
 		log.Info().
-			Str("service", "backend").
-			Msgf("rpkm66 backend starting at port %v", conf.App.Port)
+			Str("service", "checkin").
+			Msgf("rpkm66 checkin starting at port %v", conf.App.Port)
 
 		if err = grpcServer.Serve(lis); err != nil {
 			log.Fatal().
 				Err(err).
-				Str("service", "backend").
+				Str("service", "checkin").
 				Msg("Failed to start service")
 		}
 	}()
@@ -158,10 +158,10 @@ func main() {
 
 	grpcServer.GracefulStop()
 	log.Info().
-		Str("service", "backend").
+		Str("service", "checkin").
 		Msg("Closing the listener")
 	lis.Close()
 	log.Info().
-		Str("service", "backend").
+		Str("service", "checkin").
 		Msg("End of Program")
 }
