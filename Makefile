@@ -4,6 +4,9 @@ server:
 proto:
 	./scripts/compile_proto.pl proto
 
+dev:
+	@nodemon --exec go run main.go --signal SIGTERM
+
 test:
 	go vet ./...
 	go test  -v -coverpkg ./internal/... -coverprofile coverage.out -covermode count ./internal/...
