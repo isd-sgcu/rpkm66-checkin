@@ -8,23 +8,26 @@ import (
 	v1 "github.com/isd-sgcu/rpkm66-checkin/internal/proto/rpkm66/checkin/staff/v1"
 	"github.com/isd-sgcu/rpkm66-checkin/internal/utils"
 	"github.com/isd-sgcu/rpkm66-checkin/pkg/repository/staff"
+	"github.com/isd-sgcu/rpkm66-checkin/pkg/repository/user"
 )
 
 type StaffService struct {
 	v1.UnimplementedStaffServiceServer
-	repo staff.Repository
+	staff_repo staff.Repository
+	user_repo  user.Repository
 }
 
-func NewService(repo staff.Repository) v1.StaffServiceServer {
+func NewService(staff_repo staff.Repository, user_repo user.Repository) v1.StaffServiceServer {
 	return &StaffService{
 		v1.UnimplementedStaffServiceServer{},
-		repo,
+		staff_repo,
+		user_repo,
 	}
 }
 
 func (s *StaffService) IsStaff(ctx context.Context, request *v1.IsStaffRequest) (*v1.IsStaffResponse, error) {
 	var isStaff bool
-	err := s.repo.IsStaff(request.GetStaffId(), &isStaff)
+	err := s.staff_repo.IsStaff(request.GetStaffId(), &isStaff)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +41,7 @@ func (s *StaffService) IsStaff(ctx context.Context, request *v1.IsStaffRequest) 
 
 func (s *StaffService) AddEventToUser(ctx context.Context, request *v1.AddEventToUserRequest) (*v1.AddEventToUserResponse, error) {
 	var isStaff bool
-	err := s.repo.IsStaff(request.GetStaffUserId(), &isStaff)
+	err := s.staff_repo.IsStaff(request.GetStaffUserId(), &isStaff)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +50,7 @@ func (s *StaffService) AddEventToUser(ctx context.Context, request *v1.AddEventT
 		return nil, errors.New("Permission denied. Only staff user can perform this action.")
 	}
 
-	err = s.repo.AddEventToUser(request.UserId, request.EventId)
+	err = s.user_repo.AddEvent(request.UserId, request.EventId)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +64,7 @@ func (s *StaffService) AddEventToUser(ctx context.Context, request *v1.AddEventT
 
 func (s *StaffService) GenerateSignInToken(ctx context.Context, request *v1.GenerateSignInTokenRequest) (*v1.GenerateSignInTokenResponse, error) {
 	var isStaff bool
-	err := s.repo.IsStaff(request.GetStaffUserId(), &isStaff)
+	err := s.staff_repo.IsStaff(request.GetStaffUserId(), &isStaff)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +80,7 @@ func (s *StaffService) GenerateSignInToken(ctx context.Context, request *v1.Gene
 		EndAt:   request.EndAt,
 	}
 
-	err = s.repo.CreateToken(tokenEntity)
+	err = s.staff_repo.CreateToken(tokenEntity)
 	if err != nil {
 		return nil, err
 	}

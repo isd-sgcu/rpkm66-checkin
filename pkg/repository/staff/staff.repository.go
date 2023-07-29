@@ -8,7 +8,6 @@ import (
 
 type Repository interface {
 	IsStaff(userId string, result *bool) error
-	AddEventToUser(user_id string, event_id string) error
 	CreateToken(token token_ent.Token) error
 }
 
