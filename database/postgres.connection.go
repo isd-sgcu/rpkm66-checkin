@@ -7,6 +7,8 @@ import (
 	"github.com/isd-sgcu/rpkm66-checkin/cfgldr"
 	"github.com/isd-sgcu/rpkm66-checkin/internal/entity/event"
 	"github.com/isd-sgcu/rpkm66-checkin/internal/entity/namespace"
+	"github.com/isd-sgcu/rpkm66-checkin/internal/entity/staff"
+	"github.com/isd-sgcu/rpkm66-checkin/internal/entity/token"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -22,7 +24,7 @@ func InitDatabase(conf *cfgldr.Database) (db *gorm.DB, err error) {
 	// err = db.SetupJoinTable(&group.Group{}, "Baans", &baan_group.BaanGroupSelection{})
 
 	// err = db.AutoMigrate(checkin.Checkin{}, group.Group{}, baan.Baan{}, user.User{}, event.Event{})
-	db.AutoMigrate(namespace.Namespace{}, event.Event{}, event.UserEvent{})
+	db.AutoMigrate(namespace.Namespace{}, event.Event{}, event.UserEvent{}, staff.Staff{}, token.Token{})
 	if err != nil {
 		return nil, err
 	}

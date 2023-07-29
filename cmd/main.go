@@ -14,10 +14,13 @@ import (
 	"github.com/isd-sgcu/rpkm66-checkin/database"
 	event_v1 "github.com/isd-sgcu/rpkm66-checkin/internal/proto/rpkm66/checkin/event/v1"
 	namespace_v1 "github.com/isd-sgcu/rpkm66-checkin/internal/proto/rpkm66/checkin/namespace/v1"
+	staff_v1 "github.com/isd-sgcu/rpkm66-checkin/internal/proto/rpkm66/checkin/staff/v1"
 	event_repo "github.com/isd-sgcu/rpkm66-checkin/pkg/repository/event"
 	namespace_repo "github.com/isd-sgcu/rpkm66-checkin/pkg/repository/namespace"
+	staff_repo "github.com/isd-sgcu/rpkm66-checkin/pkg/repository/staff"
 	event_service "github.com/isd-sgcu/rpkm66-checkin/pkg/service/event"
 	namespace_service "github.com/isd-sgcu/rpkm66-checkin/pkg/service/namespace"
+	staff_service "github.com/isd-sgcu/rpkm66-checkin/pkg/service/staff"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
@@ -120,6 +123,9 @@ func main() {
 	eventRepo := event_repo.NewRepository(db)
 	eventService := event_service.NewService(eventRepo)
 
+	staffRepo := staff_repo.NewRepository(db)
+	staffService := staff_service.NewService(staffRepo)
+
 	grpcServer := grpc.NewServer()
 
 	// cacheRepo := cache.NewRepository(cacheDB)
@@ -128,6 +134,7 @@ func main() {
 
 	namespace_v1.RegisterNamespaceServiceServer(grpcServer, namespaceService)
 	event_v1.RegisterEventServiceServer(grpcServer, eventService)
+	staff_v1.RegisterStaffServiceServer(grpcServer, staffService)
 
 	reflection.Register(grpcServer)
 	go func() {
