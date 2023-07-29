@@ -101,15 +101,7 @@ func main() {
 			Msg("Failed to start service")
 	}
 
-	// cacheDB, err := database.InitRedisConnect(&conf.Redis)
-	// if err != nil {
-	// 	log.Fatal().
-	// 		Err(err).
-	// 		Str("service", "backend").
-	// 		Msg("Failed to start service")
-	// }
-
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%v", conf.App.Port))
+	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%v", conf.App.Port))
 	if err != nil {
 		log.Fatal().
 			Err(err).
@@ -127,8 +119,6 @@ func main() {
 	staffService := staff_service.NewService(staffRepo)
 
 	grpcServer := grpc.NewServer()
-
-	// cacheRepo := cache.NewRepository(cacheDB)
 
 	grpc_health_v1.RegisterHealthServer(grpcServer, health.NewServer())
 
@@ -158,9 +148,6 @@ func main() {
 			}
 			return sqlDb.Close()
 		},
-		// "cache": func(ctx context.Context) error {
-		// 	return cacheDB.Close()
-		// },
 		"server": func(ctx context.Context) error {
 			grpcServer.GracefulStop()
 			return nil

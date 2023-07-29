@@ -21,10 +21,8 @@ func InitDatabase(conf *cfgldr.Database) (db *gorm.DB, err error) {
 	}), &gorm.Config{})
 
 	/// Migrate here
-	// err = db.SetupJoinTable(&group.Group{}, "Baans", &baan_group.BaanGroupSelection{})
-
-	// err = db.AutoMigrate(checkin.Checkin{}, group.Group{}, baan.Baan{}, user.User{}, event.Event{})
 	db.AutoMigrate(namespace.Namespace{}, event.Event{}, event.UserEvent{}, staff.Staff{}, token.Token{})
+
 	if err != nil {
 		return nil, err
 	}
