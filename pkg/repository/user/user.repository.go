@@ -10,6 +10,7 @@ type Repository interface {
 	AddEvent(userEvent event_ent.UserEvent) error
 	IsEventTaken(userId string, eventId string) (bool, error)
 	GetUserEventById(userId string, eventId string, userEvent *event_ent.UserEvent) error
+	GetUserEventsByNamespaceId(userId string, namespaceId string, userEvent *[]*event_ent.UserEvent) error
 }
 
 func NewRepository(db *gorm.DB) Repository {
