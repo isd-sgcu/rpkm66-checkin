@@ -30,3 +30,7 @@ func (r *UserRepository) IsEventTaken(userId string, eventId string) (bool, erro
 
 	return isTaken, err
 }
+
+func (r *UserRepository) GetUserEventById(userId string, eventId string, userEvent *event_ent.UserEvent) error {
+	return r.db.Model(&event_ent.UserEvent{}).Find(&userEvent, "user_id = ? AND event_id = ?", userId, eventId).Error
+}

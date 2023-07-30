@@ -31,6 +31,7 @@ const (
 type EventServiceClient interface {
 	GetAllEvents(ctx context.Context, in *GetAllEventsRequest, opts ...grpc.CallOption) (*GetAllEventsResponse, error)
 	GetEventByEventId(ctx context.Context, in *GetEventByEventIdRequest, opts ...grpc.CallOption) (*GetEventByEventIdResponse, error)
+	// Deprecated: Do not use.
 	GetEventsByUserId(ctx context.Context, in *GetEventsByUserIdRequest, opts ...grpc.CallOption) (*GetEventsByUserIdResponse, error)
 	GetEventsByNamespaceId(ctx context.Context, in *GetEventsByNamespaceIdRequest, opts ...grpc.CallOption) (*GetEventsByNamespaceIdResponse, error)
 }
@@ -61,6 +62,7 @@ func (c *eventServiceClient) GetEventByEventId(ctx context.Context, in *GetEvent
 	return out, nil
 }
 
+// Deprecated: Do not use.
 func (c *eventServiceClient) GetEventsByUserId(ctx context.Context, in *GetEventsByUserIdRequest, opts ...grpc.CallOption) (*GetEventsByUserIdResponse, error) {
 	out := new(GetEventsByUserIdResponse)
 	err := c.cc.Invoke(ctx, EventService_GetEventsByUserId_FullMethodName, in, out, opts...)
@@ -85,6 +87,7 @@ func (c *eventServiceClient) GetEventsByNamespaceId(ctx context.Context, in *Get
 type EventServiceServer interface {
 	GetAllEvents(context.Context, *GetAllEventsRequest) (*GetAllEventsResponse, error)
 	GetEventByEventId(context.Context, *GetEventByEventIdRequest) (*GetEventByEventIdResponse, error)
+	// Deprecated: Do not use.
 	GetEventsByUserId(context.Context, *GetEventsByUserIdRequest) (*GetEventsByUserIdResponse, error)
 	GetEventsByNamespaceId(context.Context, *GetEventsByNamespaceIdRequest) (*GetEventsByNamespaceIdResponse, error)
 	mustEmbedUnimplementedEventServiceServer()
