@@ -19,6 +19,7 @@ import (
 	event_repo "github.com/isd-sgcu/rpkm66-checkin/pkg/repository/event"
 	namespace_repo "github.com/isd-sgcu/rpkm66-checkin/pkg/repository/namespace"
 	staff_repo "github.com/isd-sgcu/rpkm66-checkin/pkg/repository/staff"
+	token_repo "github.com/isd-sgcu/rpkm66-checkin/pkg/repository/token"
 	user_repo "github.com/isd-sgcu/rpkm66-checkin/pkg/repository/user"
 	event_service "github.com/isd-sgcu/rpkm66-checkin/pkg/service/event"
 	namespace_service "github.com/isd-sgcu/rpkm66-checkin/pkg/service/namespace"
@@ -118,8 +119,9 @@ func main() {
 	eventRepo := event_repo.NewRepository(db)
 	eventService := event_service.NewService(eventRepo)
 
+	tokenRepo := token_repo.NewRepository(db)
 	userRepo := user_repo.NewRepository(db)
-	userService := user_service.NewService(userRepo, eventRepo)
+	userService := user_service.NewService(userRepo, eventRepo, tokenRepo)
 
 	staffRepo := staff_repo.NewRepository(db)
 	staffService := staff_service.NewService(staffRepo, userRepo)
