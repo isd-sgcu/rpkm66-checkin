@@ -2,7 +2,6 @@ package staff
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	event_ent "github.com/isd-sgcu/rpkm66-checkin/internal/entity/event"
@@ -12,26 +11,28 @@ import (
 	event_repo "github.com/isd-sgcu/rpkm66-checkin/pkg/repository/event"
 	staff_repo "github.com/isd-sgcu/rpkm66-checkin/pkg/repository/staff"
 	user_repo "github.com/isd-sgcu/rpkm66-checkin/pkg/repository/user"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type StaffService struct {
 	v1.UnimplementedStaffServiceServer
-	staff_repo staff_repo.Repository
-	user_repo  user_repo.Repository
-	event_repo event_repo.Repository
+	staffRepo staff_repo.Repository
+	userRepo  user_repo.Repository
+	eventRepo event_repo.Repository
 }
 
-func NewService(staff_repo staff_repo.Repository, user_repo user_repo.Repository, event_repo event_repo.Repository) v1.StaffServiceServer {
+func NewService(staffRepo staff_repo.Repository, userRepo user_repo.Repository, eventRepo event_repo.Repository) v1.StaffServiceServer {
 	return &StaffService{
 		v1.UnimplementedStaffServiceServer{},
-		staff_repo,
-		user_repo,
-		event_repo,
+		staffRepo,
+		userRepo,
+		eventRepo,
 	}
 }
 
 func (s *StaffService) IsStaff(ctx context.Context, request *v1.IsStaffRequest) (*v1.IsStaffResponse, error) {
-	isStaff, err := s.staff_repo.IsStaff(request.GetStaffId())
+	isStaff, err := s.staffRepo.IsStaff(request.GetStaffId())
 	if err != nil {
 		return nil, err
 	}
@@ -44,31 +45,31 @@ func (s *StaffService) IsStaff(ctx context.Context, request *v1.IsStaffRequest) 
 }
 
 func (s *StaffService) AddEventToUser(ctx context.Context, request *v1.AddEventToUserRequest) (*v1.AddEventToUserResponse, error) {
-	isStaff, err := s.staff_repo.IsStaff(request.GetStaffUserId())
+	isStaff, err := s.staffRepo.IsStaff(request.GetStaffUserId())
 	if err != nil {
 		return nil, err
 	}
 
 	if !isStaff {
-		return nil, errors.New("Permission denied. Only staff user can perform this action.")
+		return nil, status.Error(codes.PermissionDenied, "Only staff user can perform this action.")
 	}
 
-	ok, err := s.event_repo.DoesEventExist(request.GetEventId())
+	ok, err := s.eventRepo.DoesEventExist(request.GetEventId())
 	if err != nil {
 		return nil, err
 	}
 
 	if !ok {
-		return nil, errors.New("Invalid event id")
+		return nil, status.Error(codes.InvalidArgument, "Invalid event id")
 	}
 
-	isTaken, err := s.user_repo.IsEventTaken(request.GetUserId(), request.GetEventId())
+	isTaken, err := s.userRepo.IsEventTaken(request.GetUserId(), request.GetEventId())
 	if err != nil {
 		return nil, err
 	}
 
 	if isTaken {
-		return nil, errors.New("User has already been taken the event")
+		return nil, status.Error(codes.AlreadyExists, "User has already taken the event")
 	}
 
 	userEvent := event_ent.UserEvent{
@@ -77,7 +78,7 @@ func (s *StaffService) AddEventToUser(ctx context.Context, request *v1.AddEventT
 		TakenAt: time.Now().Unix(),
 	}
 
-	err = s.user_repo.AddEvent(userEvent)
+	err = s.userRepo.AddEvent(userEvent)
 	if err != nil {
 		return nil, err
 	}
@@ -90,22 +91,22 @@ func (s *StaffService) AddEventToUser(ctx context.Context, request *v1.AddEventT
 }
 
 func (s *StaffService) GenerateSignInToken(ctx context.Context, request *v1.GenerateSignInTokenRequest) (*v1.GenerateSignInTokenResponse, error) {
-	isStaff, err := s.staff_repo.IsStaff(request.GetStaffUserId())
+	isStaff, err := s.staffRepo.IsStaff(request.GetStaffUserId())
 	if err != nil {
 		return nil, err
 	}
 
 	if !isStaff {
-		return nil, errors.New("Permission denied. Only staff user can perform this action.")
+		return nil, status.Error(codes.PermissionDenied, "Only staff user can perform this action.")
 	}
 
-	ok, err := s.event_repo.DoesEventExist(request.GetEventId())
+	ok, err := s.eventRepo.DoesEventExist(request.GetEventId())
 	if err != nil {
 		return nil, err
 	}
 
 	if !ok {
-		return nil, errors.New("Invalid event id")
+		return nil, status.Error(codes.InvalidArgument, "Invalid event id")
 	}
 
 	token := utils.GenToken(request.GetEventId() + request.GetStaffUserId())
@@ -115,7 +116,7 @@ func (s *StaffService) GenerateSignInToken(ctx context.Context, request *v1.Gene
 		EndAt:   time.Now().Add(time.Minute * 15).Unix(), // token valids for 15 minutes
 	}
 
-	err = s.staff_repo.CreateToken(tokenEntity)
+	err = s.staffRepo.CreateToken(tokenEntity)
 	if err != nil {
 		return nil, err
 	}

@@ -2,7 +2,6 @@ package staff
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	event_ent "github.com/isd-sgcu/rpkm66-checkin/internal/entity/event"
@@ -11,48 +10,50 @@ import (
 	event_repo "github.com/isd-sgcu/rpkm66-checkin/pkg/repository/event"
 	token_repo "github.com/isd-sgcu/rpkm66-checkin/pkg/repository/token"
 	user_repo "github.com/isd-sgcu/rpkm66-checkin/pkg/repository/user"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type UserService struct {
 	v1.UnimplementedUserServiceServer
-	user_repo  user_repo.Repository
-	event_repo event_repo.Repository
-	token_repo token_repo.Repository
+	userRepo  user_repo.Repository
+	eventRepo event_repo.Repository
+	tokenRepo token_repo.Repository
 }
 
-func NewService(user_repo user_repo.Repository, event_repo event_repo.Repository, token_repo token_repo.Repository) v1.UserServiceServer {
+func NewService(userRepo user_repo.Repository, eventRepo event_repo.Repository, tokenRepo token_repo.Repository) v1.UserServiceServer {
 	return &UserService{
 		v1.UnimplementedUserServiceServer{},
-		user_repo,
-		event_repo,
-		token_repo,
+		userRepo,
+		eventRepo,
+		tokenRepo,
 	}
 }
 
 func (s *UserService) AddEvent(ctx context.Context, request *v1.AddEventRequest) (*v1.AddEventResponse, error) {
 	var token token_ent.Token
-	err := s.token_repo.GetTokenInfo(request.GetToken(), &token)
+	err := s.tokenRepo.GetTokenInfo(request.GetToken(), &token)
 	if err != nil {
 		return nil, err
 	}
 
 	if token.EndAt < time.Now().Unix() {
-		return nil, errors.New("Invalid token")
+		return nil, status.Error(codes.DeadlineExceeded, "Invalid token")
 	}
 
 	var event event_ent.Event
-	err = s.event_repo.GetEventByEventId(token.EventId, &event)
+	err = s.eventRepo.GetEventByEventId(token.EventId, &event)
 	if err != nil {
 		return nil, err
 	}
 
-	isTaken, err := s.user_repo.IsEventTaken(request.GetUserId(), event.EventId)
+	isTaken, err := s.userRepo.IsEventTaken(request.GetUserId(), event.EventId)
 	if err != nil {
 		return nil, err
 	}
 
 	if isTaken {
-		return nil, errors.New("Event has already been taken")
+		return nil, status.Error(codes.AlreadyExists, "Event has already been taken")
 	}
 
 	userEvent := event_ent.UserEvent{
@@ -61,7 +62,7 @@ func (s *UserService) AddEvent(ctx context.Context, request *v1.AddEventRequest)
 		TakenAt: time.Now().Unix(),
 	}
 
-	err = s.user_repo.AddEvent(userEvent)
+	err = s.userRepo.AddEvent(userEvent)
 	if err != nil {
 		return nil, err
 	}
