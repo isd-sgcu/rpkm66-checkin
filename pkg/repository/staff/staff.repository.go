@@ -7,7 +7,7 @@ import (
 )
 
 type Repository interface {
-	IsStaff(userId string, result *bool) error
+	IsStaff(userId string) (bool, error)
 	CreateToken(token token_ent.Token) error
 }
 

@@ -16,15 +16,15 @@ func NewRepository(db *gorm.DB) *StaffRepository {
 	}
 }
 
-func (r *StaffRepository) IsStaff(userId string, result *bool) error {
+func (r *StaffRepository) IsStaff(userId string) (bool, error) {
 	var staff staff_ent.Staff
 	err := r.db.Model(&staff_ent.Staff{}).Find(&staff, "user_id = ?", userId).Error
 	if err != nil {
-		return err
+		return false, err
 	}
 
-	*result = staff.UserId != ""
-	return err
+	isStaff := staff.UserId != ""
+	return isStaff, err
 }
 
 func (r *StaffRepository) CreateToken(token token_ent.Token) error {

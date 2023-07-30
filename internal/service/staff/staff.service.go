@@ -28,8 +28,7 @@ func NewService(staff_repo staff.Repository, user_repo user.Repository) v1.Staff
 }
 
 func (s *StaffService) IsStaff(ctx context.Context, request *v1.IsStaffRequest) (*v1.IsStaffResponse, error) {
-	var isStaff bool
-	err := s.staff_repo.IsStaff(request.GetStaffId(), &isStaff)
+	isStaff, err := s.staff_repo.IsStaff(request.GetStaffId())
 	if err != nil {
 		return nil, err
 	}
@@ -42,8 +41,7 @@ func (s *StaffService) IsStaff(ctx context.Context, request *v1.IsStaffRequest) 
 }
 
 func (s *StaffService) AddEventToUser(ctx context.Context, request *v1.AddEventToUserRequest) (*v1.AddEventToUserResponse, error) {
-	var isStaff bool
-	err := s.staff_repo.IsStaff(request.GetStaffUserId(), &isStaff)
+	isStaff, err := s.staff_repo.IsStaff(request.GetStaffUserId())
 	if err != nil {
 		return nil, err
 	}
@@ -80,8 +78,7 @@ func (s *StaffService) AddEventToUser(ctx context.Context, request *v1.AddEventT
 }
 
 func (s *StaffService) GenerateSignInToken(ctx context.Context, request *v1.GenerateSignInTokenRequest) (*v1.GenerateSignInTokenResponse, error) {
-	var isStaff bool
-	err := s.staff_repo.IsStaff(request.GetStaffUserId(), &isStaff)
+	isStaff, err := s.staff_repo.IsStaff(request.GetStaffUserId())
 	if err != nil {
 		return nil, err
 	}
