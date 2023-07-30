@@ -3,6 +3,7 @@ package staff
 import (
 	"context"
 	"errors"
+	"time"
 
 	token_ent "github.com/isd-sgcu/rpkm66-checkin/internal/entity/token"
 	v1 "github.com/isd-sgcu/rpkm66-checkin/internal/proto/rpkm66/checkin/staff/v1"
@@ -77,7 +78,7 @@ func (s *StaffService) GenerateSignInToken(ctx context.Context, request *v1.Gene
 	tokenEntity := token_ent.Token{
 		Id:      token,
 		EventId: request.EventId,
-		EndAt:   request.EndAt,
+		EndAt:   time.Now().Add(time.Minute * 15).Unix(), // token valids for 15 minutes
 	}
 
 	err = s.staff_repo.CreateToken(tokenEntity)
