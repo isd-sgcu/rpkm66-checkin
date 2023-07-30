@@ -30,3 +30,15 @@ func (r *EventRepository) GetEventsByUserId(userId string, result *[]*event_ent.
 func (r *EventRepository) GetEventsByNamespaceId(namespaceId string, result *[]*event_ent.Event) error {
 	return r.db.Find(result, "namespace_id = ?", namespaceId).Error
 }
+
+func (r *EventRepository) DoesEventExist(eventId string) (bool, error) {
+	var event event_ent.Event
+	err := r.db.Find(&event, "event_id = ?", eventId).Error
+	if err != nil {
+		return false, err
+	}
+
+	ok := event.EventId == eventId
+
+	return ok, nil
+}

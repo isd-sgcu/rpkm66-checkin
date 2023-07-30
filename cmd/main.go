@@ -124,7 +124,7 @@ func main() {
 	userService := user_service.NewService(userRepo, eventRepo, tokenRepo)
 
 	staffRepo := staff_repo.NewRepository(db)
-	staffService := staff_service.NewService(staffRepo, userRepo)
+	staffService := staff_service.NewService(staffRepo, userRepo, eventRepo)
 
 	grpcServer := grpc.NewServer()
 

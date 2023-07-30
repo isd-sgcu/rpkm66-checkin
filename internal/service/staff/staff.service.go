@@ -9,21 +9,24 @@ import (
 	token_ent "github.com/isd-sgcu/rpkm66-checkin/internal/entity/token"
 	v1 "github.com/isd-sgcu/rpkm66-checkin/internal/proto/rpkm66/checkin/staff/v1"
 	"github.com/isd-sgcu/rpkm66-checkin/internal/utils"
-	"github.com/isd-sgcu/rpkm66-checkin/pkg/repository/staff"
-	"github.com/isd-sgcu/rpkm66-checkin/pkg/repository/user"
+	event_repo "github.com/isd-sgcu/rpkm66-checkin/pkg/repository/event"
+	staff_repo "github.com/isd-sgcu/rpkm66-checkin/pkg/repository/staff"
+	user_repo "github.com/isd-sgcu/rpkm66-checkin/pkg/repository/user"
 )
 
 type StaffService struct {
 	v1.UnimplementedStaffServiceServer
-	staff_repo staff.Repository
-	user_repo  user.Repository
+	staff_repo staff_repo.Repository
+	user_repo  user_repo.Repository
+	event_repo event_repo.Repository
 }
 
-func NewService(staff_repo staff.Repository, user_repo user.Repository) v1.StaffServiceServer {
+func NewService(staff_repo staff_repo.Repository, user_repo user_repo.Repository, event_repo event_repo.Repository) v1.StaffServiceServer {
 	return &StaffService{
 		v1.UnimplementedStaffServiceServer{},
 		staff_repo,
 		user_repo,
+		event_repo,
 	}
 }
 
@@ -48,6 +51,15 @@ func (s *StaffService) AddEventToUser(ctx context.Context, request *v1.AddEventT
 
 	if !isStaff {
 		return nil, errors.New("Permission denied. Only staff user can perform this action.")
+	}
+
+	ok, err := s.event_repo.DoesEventExist(request.GetEventId())
+	if err != nil {
+		return nil, err
+	}
+
+	if !ok {
+		return nil, errors.New("Invalid event id")
 	}
 
 	isTaken, err := s.user_repo.IsEventTaken(request.GetUserId(), request.GetEventId())
@@ -87,10 +99,19 @@ func (s *StaffService) GenerateSignInToken(ctx context.Context, request *v1.Gene
 		return nil, errors.New("Permission denied. Only staff user can perform this action.")
 	}
 
-	token := utils.GenToken(request.EventId + request.StaffUserId)
+	ok, err := s.event_repo.DoesEventExist(request.GetEventId())
+	if err != nil {
+		return nil, err
+	}
+
+	if !ok {
+		return nil, errors.New("Invalid event id")
+	}
+
+	token := utils.GenToken(request.GetEventId() + request.GetStaffUserId())
 	tokenEntity := token_ent.Token{
 		Id:      token,
-		EventId: request.EventId,
+		EventId: request.GetEventId(),
 		EndAt:   time.Now().Add(time.Minute * 15).Unix(), // token valids for 15 minutes
 	}
 
