@@ -19,7 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	UserService_AddEvent_FullMethodName = "/rpkm66.checkin.user.v1.UserService/AddEvent"
+	UserService_AddEvent_FullMethodName                      = "/rpkm66.checkin.user.v1.UserService/AddEvent"
+	UserService_GetAllUserEventsByNamespaceId_FullMethodName = "/rpkm66.checkin.user.v1.UserService/GetAllUserEventsByNamespaceId"
+	UserService_GetUserEventByEventId_FullMethodName         = "/rpkm66.checkin.user.v1.UserService/GetUserEventByEventId"
 )
 
 // UserServiceClient is the client API for UserService service.
@@ -27,6 +29,8 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UserServiceClient interface {
 	AddEvent(ctx context.Context, in *AddEventRequest, opts ...grpc.CallOption) (*AddEventResponse, error)
+	GetAllUserEventsByNamespaceId(ctx context.Context, in *GetAllUserEventsByNamespaceIdRequest, opts ...grpc.CallOption) (*GetAllUserEventsByNamespaceIdResponse, error)
+	GetUserEventByEventId(ctx context.Context, in *GetUserEventByEventIdRequest, opts ...grpc.CallOption) (*GetUserEventByEventIdResponse, error)
 }
 
 type userServiceClient struct {
@@ -46,11 +50,31 @@ func (c *userServiceClient) AddEvent(ctx context.Context, in *AddEventRequest, o
 	return out, nil
 }
 
+func (c *userServiceClient) GetAllUserEventsByNamespaceId(ctx context.Context, in *GetAllUserEventsByNamespaceIdRequest, opts ...grpc.CallOption) (*GetAllUserEventsByNamespaceIdResponse, error) {
+	out := new(GetAllUserEventsByNamespaceIdResponse)
+	err := c.cc.Invoke(ctx, UserService_GetAllUserEventsByNamespaceId_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) GetUserEventByEventId(ctx context.Context, in *GetUserEventByEventIdRequest, opts ...grpc.CallOption) (*GetUserEventByEventIdResponse, error) {
+	out := new(GetUserEventByEventIdResponse)
+	err := c.cc.Invoke(ctx, UserService_GetUserEventByEventId_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServiceServer is the server API for UserService service.
 // All implementations must embed UnimplementedUserServiceServer
 // for forward compatibility
 type UserServiceServer interface {
 	AddEvent(context.Context, *AddEventRequest) (*AddEventResponse, error)
+	GetAllUserEventsByNamespaceId(context.Context, *GetAllUserEventsByNamespaceIdRequest) (*GetAllUserEventsByNamespaceIdResponse, error)
+	GetUserEventByEventId(context.Context, *GetUserEventByEventIdRequest) (*GetUserEventByEventIdResponse, error)
 	mustEmbedUnimplementedUserServiceServer()
 }
 
@@ -60,6 +84,12 @@ type UnimplementedUserServiceServer struct {
 
 func (UnimplementedUserServiceServer) AddEvent(context.Context, *AddEventRequest) (*AddEventResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddEvent not implemented")
+}
+func (UnimplementedUserServiceServer) GetAllUserEventsByNamespaceId(context.Context, *GetAllUserEventsByNamespaceIdRequest) (*GetAllUserEventsByNamespaceIdResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllUserEventsByNamespaceId not implemented")
+}
+func (UnimplementedUserServiceServer) GetUserEventByEventId(context.Context, *GetUserEventByEventIdRequest) (*GetUserEventByEventIdResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserEventByEventId not implemented")
 }
 func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}
 
@@ -92,6 +122,42 @@ func _UserService_AddEvent_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserService_GetAllUserEventsByNamespaceId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAllUserEventsByNamespaceIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).GetAllUserEventsByNamespaceId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_GetAllUserEventsByNamespaceId_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).GetAllUserEventsByNamespaceId(ctx, req.(*GetAllUserEventsByNamespaceIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_GetUserEventByEventId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserEventByEventIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).GetUserEventByEventId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_GetUserEventByEventId_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).GetUserEventByEventId(ctx, req.(*GetUserEventByEventIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UserService_ServiceDesc is the grpc.ServiceDesc for UserService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -102,6 +168,14 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AddEvent",
 			Handler:    _UserService_AddEvent_Handler,
+		},
+		{
+			MethodName: "GetAllUserEventsByNamespaceId",
+			Handler:    _UserService_GetAllUserEventsByNamespaceId_Handler,
+		},
+		{
+			MethodName: "GetUserEventByEventId",
+			Handler:    _UserService_GetUserEventByEventId_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

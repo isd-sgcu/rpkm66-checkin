@@ -1,6 +1,8 @@
 package event
 
-import v1 "github.com/isd-sgcu/rpkm66-checkin/internal/proto/rpkm66/checkin/event/v1"
+import (
+	v1 "github.com/isd-sgcu/rpkm66-checkin/internal/proto/rpkm66/checkin/event/v1"
+)
 
 type Event struct {
 	EventId        string `gorm:"column:event_id;unique;not null;primaryKey"`
