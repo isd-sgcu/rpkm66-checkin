@@ -8,6 +8,7 @@ import (
 
 type Repository interface {
 	AddEvent(userEvent event_ent.UserEvent) error
+	IsEventTaken(userId string, eventId string) (bool, error)
 }
 
 func NewRepository(db *gorm.DB) Repository {

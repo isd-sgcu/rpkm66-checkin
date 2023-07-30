@@ -46,6 +46,15 @@ func (s *UserService) AddEvent(ctx context.Context, request *v1.AddEventRequest)
 		return nil, err
 	}
 
+	isTaken, err := s.user_repo.IsEventTaken(request.GetUserId(), event.EventId)
+	if err != nil {
+		return nil, err
+	}
+
+	if isTaken {
+		return nil, errors.New("Event has already been taken")
+	}
+
 	userEvent := event_ent.UserEvent{
 		UserId:  request.GetUserId(),
 		EventId: event.EventId,

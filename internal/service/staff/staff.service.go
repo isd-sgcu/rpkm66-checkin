@@ -52,6 +52,15 @@ func (s *StaffService) AddEventToUser(ctx context.Context, request *v1.AddEventT
 		return nil, errors.New("Permission denied. Only staff user can perform this action.")
 	}
 
+	isTaken, err := s.user_repo.IsEventTaken(request.GetUserId(), request.GetEventId())
+	if err != nil {
+		return nil, err
+	}
+
+	if isTaken {
+		return nil, errors.New("User has already been taken the event")
+	}
+
 	userEvent := event_ent.UserEvent{
 		UserId:  request.GetUserId(),
 		EventId: request.GetEventId(),
