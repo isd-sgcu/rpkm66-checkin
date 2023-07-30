@@ -77,15 +77,15 @@ func (s *EventService) GetEventsByUserId(ctx context.Context, request *v1.GetEve
 	protos := make([]*v1.UserEvent, len(events))
 	for i, event := range events {
 		userEvent, ok := userEventMap[event.EventId]
-		var when int64 = -1
+		var takenAt int64 = -1
 		if ok {
-			when = userEvent.When
+			takenAt = userEvent.TakenAt
 		}
 
 		protos[i] = &v1.UserEvent{
 			Event:   event.ToProto(),
 			IsTaken: ok,
-			When:    when,
+			TakenAt: takenAt,
 		}
 	}
 

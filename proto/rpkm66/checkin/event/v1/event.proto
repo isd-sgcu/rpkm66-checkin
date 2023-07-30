@@ -14,7 +14,7 @@ message Event {
 message UserEvent {
   Event event = 1;
   bool  is_taken = 2;
-  int64 when = 3;
+  int64 taken_at = 3;
 }
 
 service EventService {

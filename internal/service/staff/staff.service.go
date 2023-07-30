@@ -62,7 +62,7 @@ func (s *StaffService) AddEventToUser(ctx context.Context, request *v1.AddEventT
 	userEvent := event_ent.UserEvent{
 		UserId:  request.GetUserId(),
 		EventId: request.GetEventId(),
-		When:    time.Now().Unix(),
+		TakenAt: time.Now().Unix(),
 	}
 
 	err = s.user_repo.AddEvent(userEvent)
