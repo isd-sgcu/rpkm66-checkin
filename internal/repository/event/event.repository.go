@@ -2,7 +2,6 @@ package event
 
 import (
 	event_ent "github.com/isd-sgcu/rpkm66-checkin/internal/entity/event"
-	token_ent "github.com/isd-sgcu/rpkm66-checkin/internal/entity/token"
 	"gorm.io/gorm"
 )
 
@@ -30,11 +29,4 @@ func (r *EventRepository) GetEventsByUserId(userId string, result *[]*event_ent.
 
 func (r *EventRepository) GetEventsByNamespaceId(namespaceId string, result *[]*event_ent.Event) error {
 	return r.db.Find(result, "namespace_id = ?", namespaceId).Error
-}
-
-func (r *EventRepository) GetEventByToken(token string, result *event_ent.Event) error {
-	return r.db.Model(&token_ent.Token{}).
-		Select("events.*").
-		Joins("LEFT JOIN events ON events.event_id = tokens.event_id").
-		First(result, "tokens.id = ?", token).Error
 }

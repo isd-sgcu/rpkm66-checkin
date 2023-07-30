@@ -11,7 +11,6 @@ type Repository interface {
 	GetEventByEventId(eventId string, result *event_ent.Event) error
 	GetEventsByUserId(userId string, result *[]*event_ent.UserEvent) error
 	GetEventsByNamespaceId(namespaceId string, result *[]*event_ent.Event) error
-	GetEventByToken(token string, result *event_ent.Event) error
 }
 
 func NewRepository(db *gorm.DB) Repository {
