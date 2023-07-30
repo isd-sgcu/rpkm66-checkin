@@ -15,11 +15,6 @@ func NewRepository(db *gorm.DB) *UserRepository {
 	}
 }
 
-func (r *UserRepository) AddEvent(user_id string, event_id string) error {
-	userEvent := event_ent.UserEvent{
-		UserId:  user_id,
-		EventId: event_id,
-	}
-
+func (r *UserRepository) AddEvent(userEvent event_ent.UserEvent) error {
 	return r.db.Create(userEvent).Error
 }

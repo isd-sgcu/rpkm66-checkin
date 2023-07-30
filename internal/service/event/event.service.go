@@ -63,9 +63,9 @@ func (s *EventService) GetEventsByUserId(ctx context.Context, request *v1.GetEve
 	}
 
 	// create a set of event
-	userEventSet := map[string]struct{}{}
+	userEventMap := make(map[string]*event_ent.UserEvent)
 	for _, userEvent := range userEvents {
-		userEventSet[userEvent.EventId] = struct{}{}
+		userEventMap[userEvent.EventId] = userEvent
 	}
 
 	var events []*event_ent.Event
@@ -76,11 +76,16 @@ func (s *EventService) GetEventsByUserId(ctx context.Context, request *v1.GetEve
 
 	protos := make([]*v1.UserEvent, len(events))
 	for i, event := range events {
-		_, ok := userEventSet[event.EventId]
+		userEvent, ok := userEventMap[event.EventId]
+		var when int64 = -1
+		if ok {
+			when = userEvent.When
+		}
 
 		protos[i] = &v1.UserEvent{
 			Event:   event.ToProto(),
 			IsTaken: ok,
+			When:    when,
 		}
 	}
 

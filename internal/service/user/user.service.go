@@ -46,7 +46,13 @@ func (s *UserService) AddEvent(ctx context.Context, request *v1.AddEventRequest)
 		return nil, err
 	}
 
-	err = s.user_repo.AddEvent(request.UserId, event.EventId)
+	userEvent := event_ent.UserEvent{
+		UserId:  request.GetUserId(),
+		EventId: event.EventId,
+		When:    time.Now().Unix(),
+	}
+
+	err = s.user_repo.AddEvent(userEvent)
 	if err != nil {
 		return nil, err
 	}

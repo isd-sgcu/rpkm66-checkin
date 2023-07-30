@@ -5,6 +5,7 @@ import (
 	"errors"
 	"time"
 
+	event_ent "github.com/isd-sgcu/rpkm66-checkin/internal/entity/event"
 	token_ent "github.com/isd-sgcu/rpkm66-checkin/internal/entity/token"
 	v1 "github.com/isd-sgcu/rpkm66-checkin/internal/proto/rpkm66/checkin/staff/v1"
 	"github.com/isd-sgcu/rpkm66-checkin/internal/utils"
@@ -51,7 +52,13 @@ func (s *StaffService) AddEventToUser(ctx context.Context, request *v1.AddEventT
 		return nil, errors.New("Permission denied. Only staff user can perform this action.")
 	}
 
-	err = s.user_repo.AddEvent(request.UserId, request.EventId)
+	userEvent := event_ent.UserEvent{
+		UserId:  request.GetUserId(),
+		EventId: request.GetEventId(),
+		When:    time.Now().Unix(),
+	}
+
+	err = s.user_repo.AddEvent(userEvent)
 	if err != nil {
 		return nil, err
 	}
