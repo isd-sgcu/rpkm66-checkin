@@ -5,7 +5,7 @@ proto:
 	./scripts/compile_proto.pl proto
 
 dev:
-	@nodemon --exec go run main.go --signal SIGTERM
+	@nodemon --exec go run cmd/main.go --signal SIGTERM
 
 test:
 	go vet ./...
