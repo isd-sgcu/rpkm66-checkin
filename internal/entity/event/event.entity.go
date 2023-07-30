@@ -8,7 +8,7 @@ type Event struct {
 	EventId        string `gorm:"column:event_id;unique;not null;primaryKey"`
 	EventName      string `gorm:"column:event_name;not null"`
 	NamespaceId    string `gorm:"column:namespace_id;not null"`
-	AdditionalInfo string `gorm:"column:additional_info;serializer:json"`
+	AdditionalInfo string `gorm:"column:additional_info"`
 }
 
 func (e *Event) ToProto() *v1.Event {
