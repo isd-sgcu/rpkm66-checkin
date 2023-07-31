@@ -61,13 +61,7 @@ func (s *UserService) AddEvent(ctx context.Context, request *v1.AddEventRequest)
 		return nil, status.Error(codes.DeadlineExceeded, "Invalid token")
 	}
 
-	var event event_ent.Event
-	err = s.eventRepo.GetEventByEventId(token.EventId, &event)
-	if err != nil {
-		return nil, err
-	}
-
-	eventId := event.EventId
+	eventId := token.Event.EventId
 
 	isTaken, err := s.userRepo.IsEventTaken(userId, eventId)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
@@ -92,8 +86,8 @@ func (s *UserService) AddEvent(ctx context.Context, request *v1.AddEventRequest)
 
 	takenAt := time.Now().Unix()
 	userEvent := event_ent.UserEvent{
-		UserId:  request.GetUserId(),
-		EventId: event.EventId,
+		UserId:  userId,
+		EventId: eventId,
 		TakenAt: takenAt,
 	}
 
@@ -110,7 +104,7 @@ func (s *UserService) AddEvent(ctx context.Context, request *v1.AddEventRequest)
 		return nil, status.Error(codes.Internal, "Internal server error")
 	}
 
-	proto := event.ToProto()
+	proto := token.Event.ToProto()
 
 	res := &v1.AddEventResponse{
 		Event: proto,

@@ -16,5 +16,5 @@ func NewRepository(db *gorm.DB) *TokenRepository {
 }
 
 func (r *TokenRepository) GetTokenInfo(token string, result *token_ent.Token) error {
-	return r.db.Model(&token_ent.Token{}).First(result, "id = ?", token).Error
+	return r.db.Model(&token_ent.Token{}).Preload("Event").First(result, "id = ?", token).Error
 }
