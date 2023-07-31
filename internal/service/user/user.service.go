@@ -12,6 +12,7 @@ import (
 	event_repo "github.com/isd-sgcu/rpkm66-checkin/pkg/repository/event"
 	token_repo "github.com/isd-sgcu/rpkm66-checkin/pkg/repository/token"
 	user_repo "github.com/isd-sgcu/rpkm66-checkin/pkg/repository/user"
+	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
@@ -34,13 +35,29 @@ func NewService(userRepo user_repo.Repository, eventRepo event_repo.Repository, 
 }
 
 func (s *UserService) AddEvent(ctx context.Context, request *v1.AddEventRequest) (*v1.AddEventResponse, error) {
+	tokenId := request.GetToken()
+	userId := request.GetUserId()
+
 	var token token_ent.Token
-	err := s.tokenRepo.GetTokenInfo(request.GetToken(), &token)
+	err := s.tokenRepo.GetTokenInfo(tokenId, &token)
 	if err != nil {
-		return nil, err
+		log.Error().Err(err).
+			Str("service", "checkin").
+			Str("module", "AddEvent").
+			Str("token", tokenId).
+			Msg("Error while getting token infomation")
+
+		return nil, status.Error(codes.Internal, "Internal server error")
 	}
 
 	if token.EndAt < time.Now().Unix() {
+		log.Error().Err(err).
+			Str("service", "checkin").
+			Str("module", "AddEvent").
+			Str("token", tokenId).
+			Int64("end_at", token.EndAt).
+			Msg("Token expired")
+
 		return nil, status.Error(codes.DeadlineExceeded, "Invalid token")
 	}
 
@@ -50,24 +67,47 @@ func (s *UserService) AddEvent(ctx context.Context, request *v1.AddEventRequest)
 		return nil, err
 	}
 
-	isTaken, err := s.userRepo.IsEventTaken(request.GetUserId(), event.EventId)
-	if err != nil {
-		return nil, err
+	eventId := event.EventId
+
+	isTaken, err := s.userRepo.IsEventTaken(userId, eventId)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		log.Error().Err(err).
+			Str("service", "checkin").
+			Str("module", "AddEvent").
+			Str("user_id", userId).
+			Str("event_id", eventId).
+			Msg("Error while checking if user_id has already taken event_id")
+
+		return nil, status.Error(codes.Internal, "Internal server error")
+	} else if isTaken {
+		log.Error().Err(err).
+			Str("service", "checkin").
+			Str("module", "AddEvent").
+			Str("user_id", userId).
+			Str("event_id", eventId).
+			Msg("user_id has already taken event_id")
+
+		return nil, status.Error(codes.AlreadyExists, "User has already taken the event")
 	}
 
-	if isTaken {
-		return nil, status.Error(codes.AlreadyExists, "Event has already been taken")
-	}
-
+	takenAt := time.Now().Unix()
 	userEvent := event_ent.UserEvent{
 		UserId:  request.GetUserId(),
 		EventId: event.EventId,
-		TakenAt: time.Now().Unix(),
+		TakenAt: takenAt,
 	}
 
 	err = s.userRepo.AddEvent(userEvent)
 	if err != nil {
-		return nil, err
+		log.Error().Err(err).
+			Str("service", "checkin").
+			Str("module", "AddEvent").
+			Str("user_id", userId).
+			Str("event_id", eventId).
+			Int64("taken_at", takenAt).
+			Msg("Error while appending user event to database")
+
+		return nil, status.Error(codes.Internal, "Internal server error")
 	}
 
 	proto := event.ToProto()
@@ -87,8 +127,13 @@ func (s *UserService) GetAllUserEventsByNamespaceId(ctx context.Context, request
 
 	err := s.userRepo.GetUserEventsByNamespaceId(userId, namespaceId, &userEvents)
 	if err != nil {
-		// TODO: LOG
-		// No need to check for not found because it is not possible
+		log.Error().Err(err).
+			Str("service", "checkin").
+			Str("module", "GetAllUserEventsByNamespaceId").
+			Str("user_id", userId).
+			Str("namespace_id", namespaceId).
+			Msg("Error while getting all events of namespace_id in user_id")
+
 		return nil, status.Error(codes.Internal, "Internal server error")
 	}
 
@@ -115,10 +160,24 @@ func (s *UserService) GetUserEventByEventId(ctx context.Context, request *v1.Get
 	err := s.userRepo.GetUserEventById(userId, eventId, &userEvent)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, status.Error(codes.NotFound, "User does not have this event")
+			log.Error().Err(err).
+				Str("service", "checkin").
+				Str("module", "GetUserEventByEventId").
+				Str("user_id", userId).
+				Str("event_id", eventId).
+				Msg("user_id has never taken event_id")
+
+			return nil, status.Error(codes.NotFound, "User has never taken the event")
+		} else {
+			log.Error().Err(err).
+				Str("service", "checkin").
+				Str("module", "GetUserEventByEventId").
+				Str("user_id", userId).
+				Str("event_id", eventId).
+				Msg("Error while getting event_id of user_id")
+
+			return nil, status.Error(codes.Internal, "Internal server error")
 		}
-		// TODO: LOG
-		return nil, status.Error(codes.Internal, "Internal server error")
 	}
 
 	return &v1.GetUserEventByEventIdResponse{

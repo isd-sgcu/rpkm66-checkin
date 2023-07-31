@@ -21,14 +21,12 @@ func (r *UserRepository) AddEvent(userEvent event_ent.UserEvent) error {
 
 func (r *UserRepository) IsEventTaken(userId string, eventId string) (bool, error) {
 	var result event_ent.UserEvent
-	err := r.db.Model(&event_ent.UserEvent{}).Find(&result, "user_id = ? AND event_id = ?", userId, eventId).Error
+	err := r.db.Model(&event_ent.UserEvent{}).First(&result, "user_id = ? AND event_id = ?", userId, eventId).Error
 	if err != nil {
 		return false, err
 	}
 
-	isTaken := result.EventId != "" || result.UserId != ""
-
-	return isTaken, err
+	return true, nil
 }
 
 func (r *UserRepository) GetUserEventById(userId string, eventId string, userEvent *event_ent.UserEvent) error {
