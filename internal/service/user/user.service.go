@@ -131,7 +131,7 @@ func (s *UserService) GetAllUserEventsByNamespaceId(ctx context.Context, request
 		return nil, status.Error(codes.Internal, "Internal server error")
 	}
 
-	events := make([]*event_proto.UserEvent, 0, len(userEvents))
+	events := make([]*event_proto.UserEvent, 0)
 	for _, userEvent := range userEvents {
 		events = append(events, &event_proto.UserEvent{
 			Event:   userEvent.Event.ToProto(),
