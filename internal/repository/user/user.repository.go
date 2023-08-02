@@ -19,14 +19,9 @@ func (r *UserRepository) AddEvent(userEvent event_ent.UserEvent) error {
 	return r.db.Create(userEvent).Error
 }
 
-func (r *UserRepository) IsEventTaken(userId string, eventId string) (bool, error) {
+func (r *UserRepository) IsEventTaken(userId string, eventId string) error {
 	var result event_ent.UserEvent
-	err := r.db.Model(&event_ent.UserEvent{}).First(&result, "user_id = ? AND event_id = ?", userId, eventId).Error
-	if err != nil {
-		return false, err
-	}
-
-	return true, nil
+	return r.db.Model(&event_ent.UserEvent{}).First(&result, "user_id = ? AND event_id = ?", userId, eventId).Error
 }
 
 func (r *UserRepository) GetUserEventById(userId string, eventId string, userEvent *event_ent.UserEvent) error {

@@ -63,7 +63,7 @@ func (s *UserService) AddEvent(ctx context.Context, request *v1.AddEventRequest)
 
 	eventId := token.Event.EventId
 
-	isTaken, err := s.userRepo.IsEventTaken(userId, eventId)
+	err = s.userRepo.IsEventTaken(userId, eventId)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		log.Error().Err(err).
 			Str("service", "checkin").
@@ -73,7 +73,7 @@ func (s *UserService) AddEvent(ctx context.Context, request *v1.AddEventRequest)
 			Msg("Error while checking if user_id has already taken event_id")
 
 		return nil, status.Error(codes.Internal, "Internal server error")
-	} else if isTaken {
+	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
 		log.Error().Err(err).
 			Str("service", "checkin").
 			Str("module", "AddEvent").

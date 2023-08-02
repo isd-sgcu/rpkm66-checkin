@@ -37,8 +37,7 @@ func NewService(staffRepo staff_repo.Repository, userRepo user_repo.Repository, 
 func (s *StaffService) IsStaff(ctx context.Context, request *v1.IsStaffRequest) (*v1.IsStaffResponse, error) {
 	staffId := request.GetStaffId()
 
-	isStaff, err := s.staffRepo.IsStaff(staffId)
-	// Since record not found means staff_id is not a staff
+	err := s.staffRepo.IsStaff(staffId)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		log.Error().Err(err).
 			Str("service", "checkin").
@@ -49,6 +48,7 @@ func (s *StaffService) IsStaff(ctx context.Context, request *v1.IsStaffRequest) 
 		return nil, status.Error(codes.Internal, "Internal server error")
 	}
 
+	isStaff := !errors.Is(err, gorm.ErrRecordNotFound)
 	res := &v1.IsStaffResponse{
 		IsStaff: isStaff,
 	}
@@ -61,45 +61,49 @@ func (s *StaffService) AddEventToUser(ctx context.Context, request *v1.AddEventT
 	eventId := request.GetEventId()
 	userId := request.GetUserId()
 
-	isStaff, err := s.staffRepo.IsStaff(staffUserId)
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		log.Error().Err(err).
-			Str("service", "checkin").
-			Str("module", "AddEventToUser").
-			Str("user_id", staffUserId).
-			Msg("Error while checking if user_id is staff")
+	err := s.staffRepo.IsStaff(staffUserId)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			log.Error().Err(err).
+				Str("service", "checkin").
+				Str("module", "AddEventToUser").
+				Str("staff_id", staffUserId).
+				Msg("staff_id is not registered as staff")
 
-		return nil, status.Error(codes.Internal, "Internal server error")
-	} else if !isStaff {
-		log.Error().Err(err).
-			Str("service", "checkin").
-			Str("module", "AddEventToUser").
-			Str("staff_id", staffUserId).
-			Msg("staff_id is not registered as staff")
+			return nil, status.Error(codes.PermissionDenied, "Only staff user can perform this action.")
+		} else {
+			log.Error().Err(err).
+				Str("service", "checkin").
+				Str("module", "AddEventToUser").
+				Str("user_id", staffUserId).
+				Msg("Error while checking if user_id is staff")
 
-		return nil, status.Error(codes.PermissionDenied, "Only staff user can perform this action.")
+			return nil, status.Error(codes.Internal, "Internal server error")
+		}
 	}
 
-	doesExist, err := s.eventRepo.DoesEventExist(eventId)
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		log.Error().Err(err).
-			Str("service", "checkin").
-			Str("module", "AddEventToUser").
-			Str("event_id", eventId).
-			Msg("Error while checking if event_id exist")
+	err = s.eventRepo.DoesEventExist(eventId)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			log.Error().Err(err).
+				Str("service", "checkin").
+				Str("module", "AddEventToUser").
+				Str("event_id", eventId).
+				Msg("event_id does not exist")
 
-		return nil, status.Error(codes.Internal, "Internal server error")
-	} else if !doesExist {
-		log.Error().Err(err).
-			Str("service", "checkin").
-			Str("module", "AddEventToUser").
-			Str("event_id", eventId).
-			Msg("event_id does not exist")
+			return nil, status.Error(codes.InvalidArgument, "Invalid event id")
+		} else {
+			log.Error().Err(err).
+				Str("service", "checkin").
+				Str("module", "AddEventToUser").
+				Str("event_id", eventId).
+				Msg("Error while checking if event_id exist")
 
-		return nil, status.Error(codes.InvalidArgument, "Invalid event id")
+			return nil, status.Error(codes.Internal, "Internal server error")
+		}
 	}
 
-	isTaken, err := s.userRepo.IsEventTaken(userId, eventId)
+	err = s.userRepo.IsEventTaken(userId, eventId)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		log.Error().Err(err).
 			Str("service", "checkin").
@@ -109,7 +113,7 @@ func (s *StaffService) AddEventToUser(ctx context.Context, request *v1.AddEventT
 			Msg("Error while checking if user_id has already taken event_id")
 
 		return nil, status.Error(codes.Internal, "Internal server error")
-	} else if isTaken {
+	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
 		log.Error().Err(err).
 			Str("service", "checkin").
 			Str("module", "AddEventToUser").
@@ -151,42 +155,46 @@ func (s *StaffService) GenerateSignInToken(ctx context.Context, request *v1.Gene
 	staffUserId := request.GetStaffUserId()
 	eventId := request.GetEventId()
 
-	isStaff, err := s.staffRepo.IsStaff(staffUserId)
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		log.Error().Err(err).
-			Str("service", "checkin").
-			Str("module", "GenerateSignInToken").
-			Str("staff_id", staffUserId).
-			Msg("Error while checking if staff_id is staff")
+	err := s.staffRepo.IsStaff(staffUserId)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			log.Error().Err(err).
+				Str("service", "checkin").
+				Str("module", "GenerateSignInToken").
+				Str("staff_id", staffUserId).
+				Msg("staff_id is not registered as staff")
 
-		return nil, status.Error(codes.Internal, "Internal server error")
-	} else if !isStaff {
-		log.Error().Err(err).
-			Str("service", "checkin").
-			Str("module", "GenerateSignInToken").
-			Str("staff_id", staffUserId).
-			Msg("staff_id is not registered as staff")
+			return nil, status.Error(codes.PermissionDenied, "Only staff user can perform this action.")
+		} else {
+			log.Error().Err(err).
+				Str("service", "checkin").
+				Str("module", "GenerateSignInToken").
+				Str("staff_id", staffUserId).
+				Msg("Error while checking if staff_id is staff")
 
-		return nil, status.Error(codes.PermissionDenied, "Only staff user can perform this action.")
+			return nil, status.Error(codes.Internal, "Internal server error")
+		}
 	}
 
-	doesExist, err := s.eventRepo.DoesEventExist(eventId)
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		log.Error().Err(err).
-			Str("service", "checkin").
-			Str("module", "GenerateSignInToken").
-			Str("event_id", eventId).
-			Msg("Error while checking if event_id exist")
+	err = s.eventRepo.DoesEventExist(eventId)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			log.Error().Err(err).
+				Str("service", "checkin").
+				Str("module", "GenerateSignInToken").
+				Str("event_id", eventId).
+				Msg("event_id does not exist")
 
-		return nil, status.Error(codes.Internal, "Internal server error")
-	} else if !doesExist {
-		log.Error().Err(err).
-			Str("service", "checkin").
-			Str("module", "GenerateSignInToken").
-			Str("event_id", eventId).
-			Msg("event_id does not exist")
+			return nil, status.Error(codes.InvalidArgument, "Invalid event id")
+		} else {
+			log.Error().Err(err).
+				Str("service", "checkin").
+				Str("module", "GenerateSignInToken").
+				Str("event_id", eventId).
+				Msg("Error while checking if event_id exist")
 
-		return nil, status.Error(codes.InvalidArgument, "Invalid event id")
+			return nil, status.Error(codes.Internal, "Internal server error")
+		}
 	}
 
 	token := utils.GenToken(eventId + staffUserId)

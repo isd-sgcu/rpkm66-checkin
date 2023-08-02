@@ -31,12 +31,7 @@ func (r *EventRepository) GetEventsByNamespaceId(namespaceId string, result *[]*
 	return r.db.Find(result, "namespace_id = ?", namespaceId).Error
 }
 
-func (r *EventRepository) DoesEventExist(eventId string) (bool, error) {
+func (r *EventRepository) DoesEventExist(eventId string) error {
 	var event event_ent.Event
-	err := r.db.First(&event, "event_id = ?", eventId).Error
-	if err != nil {
-		return false, err
-	}
-
-	return true, nil
+	return r.db.First(&event, "event_id = ?", eventId).Error
 }

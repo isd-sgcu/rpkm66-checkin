@@ -16,14 +16,9 @@ func NewRepository(db *gorm.DB) *StaffRepository {
 	}
 }
 
-func (r *StaffRepository) IsStaff(userId string) (bool, error) {
+func (r *StaffRepository) IsStaff(userId string) error {
 	var staff staff_ent.Staff
-	err := r.db.Model(&staff_ent.Staff{}).First(&staff, "user_id = ?", userId).Error
-	if err != nil {
-		return false, err
-	}
-
-	return true, nil
+	return r.db.Model(&staff_ent.Staff{}).First(&staff, "user_id = ?", userId).Error
 }
 
 func (r *StaffRepository) CreateToken(token token_ent.Token) error {
