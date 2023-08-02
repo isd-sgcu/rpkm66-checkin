@@ -29,5 +29,5 @@ func (r *UserRepository) GetUserEventById(userId string, eventId string, userEve
 }
 
 func (r *UserRepository) GetUserEventsByNamespaceId(userId string, namespaceId string, userEvents *[]*event_ent.UserEvent) error {
-	return r.db.Model(&event_ent.UserEvent{}).Preload("Event", "namespace_id = ?", namespaceId).Where("user_id = ?", userId).Find(userEvents).Error
+	return r.db.Model(&event_ent.UserEvent{}).Preload("Event").Where("user_id = ?", userId).Find(userEvents).Error
 }

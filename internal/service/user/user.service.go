@@ -133,6 +133,10 @@ func (s *UserService) GetAllUserEventsByNamespaceId(ctx context.Context, request
 
 	var events []*event_proto.UserEvent
 	for _, userEvent := range userEvents {
+		if userEvent.Event.NamespaceId != namespaceId {
+			continue
+		}
+
 		events = append(events, &event_proto.UserEvent{
 			Event:   userEvent.Event.ToProto(),
 			IsTaken: true,
