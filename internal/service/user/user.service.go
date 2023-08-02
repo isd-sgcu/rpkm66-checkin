@@ -41,6 +41,16 @@ func (s *UserService) AddEvent(ctx context.Context, request *v1.AddEventRequest)
 	var token token_ent.Token
 	err := s.tokenRepo.GetTokenInfo(tokenId, &token)
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			log.Info().Err(err).
+				Str("service", "checkin").
+				Str("module", "AddEvent").
+				Str("token", tokenId).
+				Msg("someone is trying to use invalid token")
+
+			return nil, status.Error(codes.NotFound, "Token not found")
+		}
+
 		log.Error().Err(err).
 			Str("service", "checkin").
 			Str("module", "AddEvent").
